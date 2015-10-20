@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 1ns
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -33,12 +33,21 @@ module seven_top(input wire CLK_50MHZ,
 	reg [3:0] ssd2_in;
 	wire [6:0] ssd2_out;
 	
-	clk_div div0(.clk_in(CLK_50MHZ),.RST(RST),.clk_divider(32'd50000),.clk_out(ssdsel_en));
-	clk_div div1(.clk_in(CLK_50MHZ),.RST(RST),.clk_divider(32'd25000000),.clk_out(ssdcount_en));
+	// Instantiate the clock-divided enables, pulse high for one clock cycle every clock_div+1 cycles
+	clk_div div0(.clk_in(CLK_50MHZ),.RST(RST),.clk_divider(32'd50000 - 1),.clk_out(ssdsel_en));
+	clk_div div1(.clk_in(CLK_50MHZ),.RST(RST),.clk_divider(32'd50000000 - 1),.clk_out(ssdcount_en));
 			
+	// Instantiate the SSD decoders
 	ssd ssd1(.CLK(CLK_50MHZ),.RST(RST),.in(ssd1_in),.out(ssd1_out));
 	ssd ssd2(.CLK(CLK_50MHZ),.RST(RST),.in(ssd2_in),.out(ssd2_out));
 	
+	/*
+		This block determines which digit is being serviced by which of the 
+		SSD decoders during each refresh window
+		
+		Block diagram is a 2-to-1 mux with an enable
+		that switches when the counter reaches switching value
+	*/
 	always @(posedge CLK_50MHZ) begin
 		if(RST) begin
 			ssdsel <= 0;
@@ -55,6 +64,10 @@ module seven_top(input wire CLK_50MHZ,
 		end
 	end
 	
+	/*
+		Counter controls for both of the SSD decoders to form a
+		2-digit value
+	*/
 	always @(posedge CLK_50MHZ) 
 	begin
 		if(RST)

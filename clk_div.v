@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 1ns
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -26,6 +26,9 @@ module clk_div(input wire clk_in,
 	 
 	 reg [31:0] counter;
 	 
+	 /*
+		clk_out will pulse high for one cycle every clk_divider+1 cycles
+	 */
 	 always @(posedge clk_in) begin
 		if(RST) 
 		begin
